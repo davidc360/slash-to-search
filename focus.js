@@ -57,9 +57,14 @@ function handleKeyPress(ev) {
     // Stop if key was pressed when focused on a text field
     // (Meaning user is typing)
     if (ev.target.type === 'text') return
+    if (ev.target.type === 'textarea') return
+
     if (ev.key === '/') {
-        ev.preventDefault()
-        focusOnSearch()
+        /* setTimeout 0 is needed to send the call
+        to the bottom of the stack,
+        so that the default event happens before my handler
+        */
+        setTimeout(focusOnSearch, 0)
     }
 }
 

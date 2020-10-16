@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
-    "name": "/ to search",
-    "version": "0.1",
+    "name": "Slash to search",
+    "version": "0.0.0.1",
     "description": "Press / to focus on the search bar.",
     "permissions": [
         "<all_urls>",
