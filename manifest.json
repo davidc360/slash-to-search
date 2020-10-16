@@ -3,10 +3,22 @@
     "name": "/ to search",
     "version": "0.1",
     "description": "Press / to focus on the search bar.",
+    "permissions": [
+        "<all_urls>",
+        "storage",
+        "tabs"
+    ],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["main.js"]
+            "js": ["content.js"]
         }
-    ]
+    ],
+    "browser_action": {
+        "default_popup": "popup.html"
+    }
   }
