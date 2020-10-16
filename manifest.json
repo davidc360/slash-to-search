@@ -9,7 +9,10 @@
         "tabs"
     ],
     "background": {
-        "scripts": ["background.js"],
+        "scripts": [
+            "oninstall.js",
+            "background.js"
+        ],
         "persistent": false
     },
     "content_scripts": [
