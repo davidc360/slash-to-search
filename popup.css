@@ -1,4 +1,6 @@
 body {
     width: 120px;
     text-align: center;
+    border: solid cornflowerblue 4px;
+    padding: 1em
 }
