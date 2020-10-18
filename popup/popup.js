@@ -1,27 +1,20 @@
 /*
     On/Off  button
 */
-
 // Get the elements
-const checkbox = document.querySelector('#onCheckbox')
-const label = document.querySelector('#onLabel')
-const updateLabelText = on => label.textContent = on ? 'On' : 'Off'
 
 // Initialize button state
-chrome.storage.sync.get('on', function (data) {
-    const serviceOn = data.on ?? true
-    checkbox.checked = serviceOn
-    updateLabelText(serviceOn)
-})
-
-checkbox.addEventListener('change', ev => {
-    const checked = ev.target.checked
-
-    chrome.storage.sync.set({
-        'on': checked
+// Async get service on
+const getServiceOn = () => new Promise(
+    resolve => chrome.storage.sync.get('on', data => {
+        resolve(data['on'])
     })
-    updateLabelText(checked)
-})
+)
+// chrome.storage.sync.get('on', data => {
+//     const serviceOn = data['on']
+//     checkbox.checked = serviceOn
+//     updateLabelText(serviceOn)
+// })
 
 /*
     Auto focus button
@@ -51,6 +44,15 @@ const getBlackList = () => new Promise(
         resolve(blackList['blackList'])
     })
 )
+
+
+// get elements first
+// on/off button
+const onCheckbox = document.querySelector('#onCheckbox')
+const onLabel = document.querySelector('#onLabel')
+const updateOnLabelText = on => onLabel.textContent = on ? 'On' : 'Off'
+
+// black list button
 const websiteCheckbox = document.querySelector('#websiteCheckbox')
 const websiteLabel = document.querySelector('#websiteLabel')
 
@@ -60,17 +62,42 @@ chrome.tabs.query({
     lastFocusedWindow: true
 }, async tabs => {
         const currentTab = tabs[0]
+        const tabID = currentTab.id
+
+        /* 
+        Handle on/off button
+        */
+        const serviceOn = await getServiceOn()
+        onCheckbox.checked = serviceOn
+        updateOnLabelText(serviceOn)
+        
+        onCheckbox.addEventListener('change', ev => {
+            const checked = ev.target.checked
+        
+            chrome.storage.sync.set({
+                'on': checked
+            })
+            updateOnLabelText(checked)
+        
+            chrome.tabs.sendMessage(tabID, {
+                type: checked ? 'startService' : 'stopService'
+            })
+        })
+
+        /* 
+        Handle black list
+        */
+
         const currentURL = new URL(currentTab.url)
         const currentDomain = currentURL.hostname
         let blackList = await getBlackList()
-        console.log(blackList)
         const currentSiteBlocked = blackList.includes(currentDomain)
 
         websiteLabel.textContent = 'Black list ' + currentDomain
         websiteCheckbox.checked = currentSiteBlocked
 
 
-        websiteCheckbox.addEventListener('change', ev => {
+        websiteCheckbox.addEventListener('change', async ev => {
             const checked = ev.target.checked
             if (checked) {
                 blackList = [...blackList, currentDomain]
@@ -79,8 +106,9 @@ chrome.tabs.query({
             } else {
                 const index = blackList.indexOf(currentDomain)
                 if (index > -1) blackList.splice(index, 1)
-                // start service if checked
-                chrome.tabs.sendMessage(currentTab.id, {type: 'startService'})
+                // start service if checked (if service is on)
+                if(serviceOn)
+                    chrome.tabs.sendMessage(currentTab.id, {type: 'startService'})
             }
             chrome.storage.sync.set({
                 'blackList': JSON.stringify(blackList)
@@ -88,4 +116,3 @@ chrome.tabs.query({
 
         })
 })
-

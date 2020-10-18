@@ -26,7 +26,7 @@ chrome.runtime.onMessage.addListener(
                     
                     // inject script if not blacklist or off
                     chrome.tabs.executeScript(senderId, {
-                        file: 'focus.js'
+                        file: 'content-scripts/focus.js'
                     })
         
                     const autoFocus = await asyncReadFromStorage('autoFocus')
