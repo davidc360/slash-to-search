@@ -41,3 +41,45 @@ autoFocusCheckbox.addEventListener('change', ev => {
         'autoFocus': checked
     })
 })
+
+/*
+    White list website button
+*/
+// function to get black listed sites from storage
+const getBlackList = () => new Promise(
+    resolve => chrome.runtime.sendMessage({ type: 'getBlacklist' }, blackList => {
+        resolve(blackList['blackList'])
+    })
+)
+const websiteCheckbox = document.querySelector('#websiteCheckbox')
+const websiteLabel = document.querySelector('#websiteLabel')
+
+// get current URL first
+chrome.tabs.query({
+    active: true,
+    lastFocusedWindow: true
+}, async tabs => {
+        const currentURL = new URL(tabs[0].url)
+        const currentDomain = currentURL.hostname
+        let blackList = await getBlackList()
+        console.log(blackList)
+        const currentSiteBlocked = blackList.includes(currentDomain)
+
+        websiteLabel.textContent = 'Black list ' + currentDomain
+        websiteCheckbox.checked = currentSiteBlocked
+
+
+        websiteCheckbox.addEventListener('change', ev => {
+            const checked = ev.target.checked
+            if (checked) {
+                blackList = [...blackList, currentDomain]
+            } else {
+                const index = blackList.indexOf(currentDomain)
+                if (index > -1) blackList.splice(index, 1)
+            }
+            chrome.storage.sync.set({
+                'blackList': JSON.stringify(blackList)
+            })
+        })
+})
+

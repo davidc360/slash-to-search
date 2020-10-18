@@ -4,7 +4,8 @@ chrome.runtime.onInstalled.addListener(function(details){
     chrome.storage.sync.get(null, function (items) {
         chrome.storage.sync.set({
             'on': items['on'] ?? true,
-            'autoFocus': items['autoFocus'] ?? false
+            'autoFocus': items['autoFocus'] ?? false,
+            'blackList': items['blackList'] ?? JSON.stringify(['www.youtube.com'])
         })
     })
 })

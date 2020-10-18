@@ -5,6 +5,10 @@ body {
     padding: 1em
 }
 
+.option{
+    margin-bottom: 0.5em
+}
+
 .title{
     color: cornflowerblue
 }
