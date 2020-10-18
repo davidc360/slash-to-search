@@ -59,7 +59,8 @@ chrome.tabs.query({
     active: true,
     lastFocusedWindow: true
 }, async tabs => {
-        const currentURL = new URL(tabs[0].url)
+        const currentTab = tabs[0]
+        const currentURL = new URL(currentTab.url)
         const currentDomain = currentURL.hostname
         let blackList = await getBlackList()
         console.log(blackList)
@@ -73,13 +74,18 @@ chrome.tabs.query({
             const checked = ev.target.checked
             if (checked) {
                 blackList = [...blackList, currentDomain]
+                // stop service if blacklisted
+                chrome.tabs.sendMessage(currentTab.id, {type: 'stopService'})
             } else {
                 const index = blackList.indexOf(currentDomain)
                 if (index > -1) blackList.splice(index, 1)
+                // start service if checked
+                chrome.tabs.sendMessage(currentTab.id, {type: 'startService'})
             }
             chrome.storage.sync.set({
                 'blackList': JSON.stringify(blackList)
             })
+
         })
 })
 

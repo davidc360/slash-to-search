@@ -2,15 +2,20 @@
 // sends command to focus (i.e., when focus on page load)
 chrome.runtime.onMessage.addListener(
     (request, sender, sendResponse) => {
-        if (request.type == "focusOnSearch") {
-            focusOnSearch()
-        }
-})
-// Listen for stopping service
-chrome.runtime.onMessage.addListener(
-    (request, sender, sendResponse) => {
-        if (request.type == "stopListener") {
-            stopListener()
+        switch (request.type) {
+            case 'focusOnSearch':
+                focusOnSearch()
+                break
+                
+            // Listen for starting service
+            case 'startService':
+                startListener()
+                break
+            
+            // Listen for stopping service
+            case 'stopService':
+                stopListener()
+                break
         }
 })
 
@@ -97,8 +102,12 @@ function handleKeyPress(ev) {
     }
 }
 
-const slashListener = document.addEventListener('keypress', handleKeyPress)
+const startListener = () => {
+    stopListener()
+    document.addEventListener('keypress', handleKeyPress)
+}
+const stopListener = () => document.removeEventListener('keypress', handleKeyPress)
 
-const stopListener = () => document.removeEventListener(slashListener)
+startListener()
 
 
