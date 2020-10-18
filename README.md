@@ -4,3 +4,8 @@ Chrome extension allowing users to press '/' to focus on the search bar in a giv
 
 # Use
 To test, clone the repo, go to chrome://extensions, click 'load unpacked' and select the directory.
+
+# Screenshot
+Chrome extension pop up UI:
+![Image of UI]
+(/screenshot.png)
