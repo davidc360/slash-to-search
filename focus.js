@@ -1,69 +1,80 @@
 // Listener for when background script
 // sends command to focus (i.e., when focus on page load)
 chrome.runtime.onMessage.addListener(
-    function (request, sender, sendResponse) {
+    (request, sender, sendResponse) => {
         if (request.type == "focusOnSearch") {
             focusOnSearch()
-      }
+        }
+})
+// Listen for stopping service
+chrome.runtime.onMessage.addListener(
+    (request, sender, sendResponse) => {
+        if (request.type == "stopListener") {
+            stopListener()
+        }
 })
 
 // Get input elements with type 'text' or 'search'
-function getInputElements() {
-    return Array.from(
-        document.querySelectorAll('input[type="search"], input[type="text"]')
-    )
-}
+const getInputElements = () => Array.from(
+    document.querySelectorAll('input[type="search"], input[type="text"]')
+)
 
 // Determine if the element is labeled as 'search'
-function isLabeledSearch(el) {
-    return el.outerHTML && (
-        el.outerHTML.includes('Search')
-        || el.outerHTML.includes('search')
+const isLabeledSearch = el => (
+    el.outerHTML && (
+    el.outerHTML.includes('Search')
+    || el.outerHTML.includes('search')
     )
-}
+)
 
 // Determine if an element is currently not visible
-function isHidden(el) {
-    const searchPhrases = [
-        'hidden',
-        'disabled',
-        'display:none',
-        'display: none',
-    ]
+const PHRASES_INDICATING_HIDDEN_EL = [
+    'hidden',
+    'disabled',
+    'display:none',
+    'display: none',
+]
+const isHidden = el => {
+    if (PHRASES_INDICATING_HIDDEN_EL.some(phrase => el.outerHTML.includes(phrase)))
+        return true
+    // offsetParent will return null if hidden or position fixed
+    if (el.offsetParent === null) return true
 
-    return searchPhrases.some(phrase => el.outerHTML.includes(phrase))
-}
+    //check if height or width is 0
+    if (el.offsetHeight === 0 || el.offsetWidth === 0) return true
 
-// Determine if an element is used for typing
-function isTypingArea(el) {
-    if (el.type === 'text'
-        || el.type === 'textarea'
-        || el.contentEditable === 'true'
-        || el.contentEditable === 'True'
-    ) return true
-
+    // if not found to be hidden
     return false
 }
 
+// Determine if an element is used for typing
+const isTypingArea = el => (
+    el.type === 'text'
+    || el.type === 'textarea'
+    || el.contentEditable === 'true'
+    || el.contentEditable === 'True'
+)
+
 // Focus on an element and print it out in console
-function focus(el) {
+const focus = (el, reason) => {
     el.focus()
     console.log('focused on: ', el)
+    if (reason) console.log('reason: ' + reason)
 }
 
-function focusOnSearch() {
+const focusOnSearch = () => {
     const inputEls = getInputElements()
 
     for (const el of inputEls) {
         if (isLabeledSearch(el)) {
-            focus(el)
+            focus(el, 'element labeled search')
             return
         }
     }
 
     for (const el of inputEls) {
         if (!isHidden(el)) {
-            focus(el)
+            focus(el, 'first input on page')
             return
         }
     }
@@ -86,5 +97,8 @@ function handleKeyPress(ev) {
     }
 }
 
-document.addEventListener('keypress', handleKeyPress)
+const slashListener = document.addEventListener('keypress', handleKeyPress)
+
+const stopListener = () => document.removeEventListener(slashListener)
+
 
