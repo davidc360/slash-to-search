@@ -4,3 +4,7 @@ body {
     border: solid cornflowerblue 4px;
     padding: 1em
 }
+
+.title{
+    color: cornflowerblue
+}
