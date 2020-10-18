@@ -7,5 +7,4 @@ To test, clone the repo, go to chrome://extensions, click 'load unpacked' and se
 
 # Screenshot
 Chrome extension pop up UI:
-![Image of UI]
-(/screenshot.png)
+![Image of UI](/screenshot.png)
