@@ -1,3 +1,10 @@
+// websites with feature disabled by default
+// because they already have the feature
+export const SITE_ALREADY_WITH_FEATURE = [
+    'www.youtube.com',
+    'github.com'
+]
+
 // read from storage asynchronously
 export const asyncReadFromStorage = (key, local = false) => (
     new Promise((resolve, reject) => {

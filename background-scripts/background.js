@@ -1,13 +1,15 @@
 /*
     Helpers
 */
-const asyncReadFromStorage = (key, local = false) => (
-    new Promise((resolve, reject) => {
-        chrome.storage.sync.get(key, function(result) {
-            resolve(result[key])
-        })
-    })
-)
+import { asyncReadFromStorage } from '/helpers.js'
+
+// const asyncReadFromStorage = (key, local = false) => (
+//     new Promise((resolve, reject) => {
+//         chrome.storage.sync.get(key, function(result) {
+//             resolve(result[key])
+//         })
+//     })
+// )
 
 chrome.runtime.onMessage.addListener(
     (request, sender, sendResponse) => {

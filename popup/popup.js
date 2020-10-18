@@ -6,9 +6,9 @@
     const { 
         asyncReadFromStorage,
         asyncGetCurrentTab,
-        asyncGetBlackList
+        asyncGetBlackList,
+        SITE_ALREADY_WITH_FEATURE
      } = await import(helpersSrc)
-
      const getServiceOn = () => asyncReadFromStorage('on')
 
     
@@ -81,8 +81,12 @@
     /* 
         Handle black list
     */
-    websiteLabel.textContent = 'Black list ' + currentDomain
     websiteCheckbox.checked = currentSiteBlocked
+    websiteLabel.textContent = 'Black list ' + currentDomain
+    // if website already has feature, will be black listed
+    // by default and let users know
+    if (SITE_ALREADY_WITH_FEATURE.includes(currentDomain))
+        websiteLabel.textContent += '\n(already has feature)'
 
     websiteCheckbox.addEventListener('change', async ev => {
         const checked = ev.target.checked
@@ -102,17 +106,3 @@
         })
     })
 })()
-
-// Initialize button state
-// chrome.storage.sync.get('autoFocus', function (data) {
-//     const autoFocusOn = data.autoFocus ?? false
-//     autoFocusCheckbox.checked = autoFocusOn
-// })
-
-// autoFocusCheckbox.addEventListener('change', ev => {
-//     const checked = ev.target.checked
-
-//     chrome.storage.sync.set({
-//         'autoFocus': checked
-//     })
-// })
