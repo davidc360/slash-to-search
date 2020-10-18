@@ -1,21 +1,9 @@
-/*
-    On/Off  button
-*/
-// Get the elements
-
-// Initialize button state
 // Async get service on
 const getServiceOn = () => new Promise(
     resolve => chrome.storage.sync.get('on', data => {
         resolve(data['on'])
     })
 )
-// chrome.storage.sync.get('on', data => {
-//     const serviceOn = data['on']
-//     checkbox.checked = serviceOn
-//     updateLabelText(serviceOn)
-// })
-
 /*
     Auto focus button
 */
@@ -46,7 +34,9 @@ const getBlackList = () => new Promise(
 )
 
 
-// get elements first
+/*
+    Get elements first
+*/
 // on/off button
 const onCheckbox = document.querySelector('#onCheckbox')
 const onLabel = document.querySelector('#onLabel')
@@ -63,16 +53,21 @@ chrome.tabs.query({
 }, async tabs => {
         const currentTab = tabs[0]
         const tabID = currentTab.id
+        const currentURL = new URL(currentTab.url)
+        const currentDomain = currentURL.hostname
+        let blackList = await getBlackList()
+        const currentSiteBlocked = blackList.includes(currentDomain)
 
         /* 
         Handle on/off button
         */
-        const serviceOn = await getServiceOn()
+        let serviceOn = await getServiceOn()
         onCheckbox.checked = serviceOn
         updateOnLabelText(serviceOn)
         
         onCheckbox.addEventListener('change', ev => {
             const checked = ev.target.checked
+            serviceOn = checked
         
             chrome.storage.sync.set({
                 'on': checked
@@ -80,19 +75,15 @@ chrome.tabs.query({
             updateOnLabelText(checked)
         
             chrome.tabs.sendMessage(tabID, {
-                type: checked ? 'startService' : 'stopService'
+                type: (checked && !currentSiteBlocked)
+                    ? 'startService' : 'stopService'
             })
+
         })
 
         /* 
         Handle black list
         */
-
-        const currentURL = new URL(currentTab.url)
-        const currentDomain = currentURL.hostname
-        let blackList = await getBlackList()
-        const currentSiteBlocked = blackList.includes(currentDomain)
-
         websiteLabel.textContent = 'Black list ' + currentDomain
         websiteCheckbox.checked = currentSiteBlocked
 
@@ -113,6 +104,5 @@ chrome.tabs.query({
             chrome.storage.sync.set({
                 'blackList': JSON.stringify(blackList)
             })
-
         })
 })
