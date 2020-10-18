@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener(
 })
 
 // Get input elements with type 'text' or 'search'
-function getFilteredInputElements() {
+function getInputElements() {
     return Array.from(
         document.querySelectorAll('input[type="search"], input[type="text"]')
     )
@@ -16,7 +16,10 @@ function getFilteredInputElements() {
 
 // Determine if the element is labeled as 'search'
 function isLabeledSearch(el) {
-    return el.outerHTML && el.outerHTML.includes('search')
+    return el.outerHTML && (
+        el.outerHTML.includes('Search')
+        || el.outerHTML.includes('search')
+    )
 }
 
 // Determine if an element is currently not visible
@@ -49,7 +52,7 @@ function focus(el) {
 }
 
 function focusOnSearch() {
-    const inputEls = getFilteredInputElements()
+    const inputEls = getInputElements()
 
     for (const el of inputEls) {
         if (isLabeledSearch(el)) {
