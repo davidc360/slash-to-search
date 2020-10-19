@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener(
 
 // Get input elements with type 'text' or 'search'
 const getInputElements = () => Array.from(
-    document.querySelectorAll('input[type="search"], input[type="text"]')
+    document.querySelectorAll('input')
 )
 
 // Determine if the element is labeled as 'search'
@@ -33,13 +33,14 @@ const isLabeledSearch = el => (
 )
 
 // Determine if an element is currently not visible
-const PHRASES_INDICATING_HIDDEN_EL = [
-    'hidden',
-    'disabled',
-    'display:none',
-    'display: none',
-]
 const isHidden = el => {
+    const PHRASES_INDICATING_HIDDEN_EL = [
+        'hidden',
+        'disabled',
+        'display:none',
+        'display: none',
+    ]
+
     if (PHRASES_INDICATING_HIDDEN_EL.some(phrase => el.outerHTML.includes(phrase)))
         return true
     // offsetParent will return null if hidden or position fixed
@@ -50,6 +51,11 @@ const isHidden = el => {
 
     // if not found to be hidden
     return false
+}
+
+// Determine if input element is for text
+const isText = el => {
+    return el.type === 'text' || el.type === 'search'
 }
 
 // Determine if an element is used for typing
@@ -79,7 +85,7 @@ const focusOnSearch = () => {
     }
 
     for (const el of inputEls) {
-        if (!isHidden(el)) {
+        if (isText(el) && !isHidden(el)) {
             focus(el, 'first input on page')
             return
         }
