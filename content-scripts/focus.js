@@ -65,6 +65,7 @@ const focus = (el, reason) => {
     el.focus()
     console.log('focused on: ', el)
     if (reason) console.log('reason: ' + reason)
+    el.setSelectionRange(el.value.length, el.value.length)
 }
 
 const focusOnSearch = () => {
