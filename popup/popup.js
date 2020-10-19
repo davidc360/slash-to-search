@@ -86,7 +86,7 @@
     // if website already has feature, will be black listed
     // by default and let users know
     if (SITE_ALREADY_WITH_FEATURE.includes(currentDomain))
-        websiteLabel.textContent += '\n(already has feature)'
+        websiteLabel.textContent += `\n(note: feature already built in on ${currentDomain})`
 
     websiteCheckbox.addEventListener('change', async ev => {
         const checked = ev.target.checked
