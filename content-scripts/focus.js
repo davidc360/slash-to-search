@@ -45,6 +45,7 @@ const isEditable = el => {
     return false
 
     // check if readonly
+    if (el.readOnly === true) return false
     if (el.readonly === true) return false
 
     // offsetParent will return null if hidden or position fixed
@@ -67,6 +68,7 @@ const isText = el => {
 const isTypingArea = el => (
     el.type === 'text'
     || el.type === 'textarea'
+    || el.contentEditable === true
     || el.contentEditable === 'true'
     || el.contentEditable === 'True'
 )
@@ -121,5 +123,3 @@ const startListener = () => {
 const stopListener = () => document.removeEventListener('keypress', handleKeyPress)
 
 startListener()
-
-
