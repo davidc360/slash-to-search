@@ -18,29 +18,29 @@
     // on/off button
     const onCheckbox = document.querySelector('#onCheckbox')
     const onLabel = document.querySelector('#onLabel')
-    const updateOnLabelText = on => onLabel.textContent = on ? 'On' : 'Off'
-
+    
     // auto focus button
     const autoFocusCheckbox = document.querySelector('#autoFocusCheckbox')
-
+    
     // black list button
     const websiteCheckbox = document.querySelector('#websiteCheckbox')
     const websiteLabel = document.querySelector('#websiteLabel')
-
-
+    
+    
     /* 
-        initialize states
+    initialize states
     */
-    const currentTab = await asyncGetCurrentTab()
-    const tabID = currentTab.id
-    const currentURL = new URL(currentTab.url)
-    const currentDomain = currentURL.hostname
-    let blackList = await asyncGetBlackList()
-    const currentSiteBlocked = blackList.includes(currentDomain)
+   const currentTab = await asyncGetCurrentTab()
+   const tabID = currentTab.id
+   const currentURL = new URL(currentTab.url)
+   const currentDomain = currentURL.hostname
+   let blackList = await asyncGetBlackList()
+   const currentSiteBlocked = blackList.includes(currentDomain)
+   const updateOnLabelText = on => onLabel.textContent = on ? 'On' : 'Off'
 
 
     /* 
-    Handle on/off button
+        Handle on/off button
     */
     let serviceOn = await getServiceOn()
     onCheckbox.checked = serviceOn

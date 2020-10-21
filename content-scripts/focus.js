@@ -32,8 +32,8 @@ const isLabeledSearch = el => (
     )
 )
 
-// Determine if an element is currently not visible
-const isHidden = el => {
+// Determine if an element is visible and editable
+const isEditable = el => {
     const PHRASES_INDICATING_HIDDEN_EL = [
         'hidden',
         'disabled',
@@ -42,15 +42,20 @@ const isHidden = el => {
     ]
 
     if (PHRASES_INDICATING_HIDDEN_EL.some(phrase => el.outerHTML.includes(phrase)))
-        return true
-    // offsetParent will return null if hidden or position fixed
-    if (el.offsetParent === null) return true
-
-    //check if height or width is 0
-    if (el.offsetHeight === 0 || el.offsetWidth === 0) return true
-
-    // if not found to be hidden
     return false
+
+    // check if readonly
+    if (el.readonly === true) return false
+
+    // offsetParent will return null if hidden or position fixed
+    if (el.offsetParent === null) return false
+
+    // check if height or width is 0
+    if (el.offsetHeight === 0 || el.offsetWidth === 0) return false
+
+
+    // if not found to be not editable
+    return true
 }
 
 // Determine if input element is for text
@@ -78,14 +83,14 @@ const focusOnSearch = () => {
     const inputEls = getInputElements()
 
     for (const el of inputEls) {
-        if (isLabeledSearch(el)) {
+        if (isLabeledSearch(el) && isEditable(el)) {
             focus(el, 'element labeled search')
             return
         }
     }
 
     for (const el of inputEls) {
-        if (isText(el) && !isHidden(el)) {
+        if (isText(el) && isEditable(el)) {
             focus(el, 'first input on page')
             return
         }
