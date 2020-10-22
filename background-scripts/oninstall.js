@@ -1,6 +1,6 @@
 // set default settings if there aren't any existing
 // black list YouTube by default because it has the feature built in
-import { SITE_ALREADY_WITH_FEATURE } from '/helpers.js'
+import { SITES_ALREADY_WITH_FEATURE } from '/helpers.js'
 
 chrome.runtime.onInstalled.addListener(function(details){
     // pass in null to get all keys
@@ -8,7 +8,7 @@ chrome.runtime.onInstalled.addListener(function(details){
         chrome.storage.sync.set({
             'on': items['on'] ?? true,
             'autoFocus': items['autoFocus'] ?? false,
-            'blackList': items['blackList'] ?? JSON.stringify(SITE_ALREADY_WITH_FEATURE)
+            'blackList': items['blackList'] ?? JSON.stringify(SITES_ALREADY_WITH_FEATURE)
         })
     })
 })

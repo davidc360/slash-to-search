@@ -7,13 +7,13 @@
         asyncReadFromStorage,
         asyncGetCurrentTab,
         asyncGetBlackList,
-        SITE_ALREADY_WITH_FEATURE
+        SITES_ALREADY_WITH_FEATURE
      } = await import(helpersSrc)
      const getServiceOn = () => asyncReadFromStorage('on')
 
     
     /*
-        Get elements first
+        Grab elements
     */
     // on/off button
     const onCheckbox = document.querySelector('#onCheckbox')
@@ -30,13 +30,13 @@
     /* 
     initialize states
     */
-   const currentTab = await asyncGetCurrentTab()
-   const tabID = currentTab.id
-   const currentURL = new URL(currentTab.url)
-   const currentDomain = currentURL.hostname
-   let blackList = await asyncGetBlackList()
-   const currentSiteBlocked = blackList.includes(currentDomain)
-   const updateOnLabelText = on => onLabel.textContent = on ? 'On' : 'Off'
+    const currentTab = await asyncGetCurrentTab()
+    const tabID = currentTab.id
+    const currentURL = new URL(currentTab.url)
+    const currentDomain = currentURL.hostname
+    let blackList = await asyncGetBlackList()
+    const currentSiteBlocked = blackList.includes(currentDomain)
+    const updateOnLabelText = on => onLabel.textContent = on ? 'On for all sites' : 'Off for all sites'
 
 
     /* 
@@ -85,7 +85,7 @@
     websiteLabel.textContent = 'Black list ' + currentDomain
     // if website already has feature, will be black listed
     // by default and let users know
-    if (SITE_ALREADY_WITH_FEATURE.includes(currentDomain))
+    if (SITES_ALREADY_WITH_FEATURE.includes(currentDomain))
         websiteLabel.textContent += `\n(note: feature already built in on ${currentDomain})`
 
     websiteCheckbox.addEventListener('change', async ev => {
@@ -95,8 +95,10 @@
             // stop service if blacklisted
             chrome.tabs.sendMessage(currentTab.id, {type: 'stopService'})
         } else {
+            // if in blacklist, remove it
             const index = blackList.indexOf(currentDomain)
             if (index > -1) blackList.splice(index, 1)
+
             // start service if checked (if service is on)
             if(serviceOn)
                 chrome.tabs.sendMessage(currentTab.id, {type: 'startService'})

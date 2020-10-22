@@ -1,6 +1,6 @@
 // websites with feature disabled by default
 // because they already have the feature
-export const SITE_ALREADY_WITH_FEATURE = [
+export const SITES_ALREADY_WITH_FEATURE = [
     'www.youtube.com',
     'github.com'
 ]
