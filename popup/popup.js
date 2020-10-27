@@ -131,20 +131,54 @@
         Handle Auto focus    
     */
     setColor(autoFocusCheckbox, autoFocusOn ? 'green' : 'red')
-    setColor(currentSiteAutoFocusCheckBox, autoFocusOn ? 'green' : 'red')
 
-    autoFocusCheckbox.addEventListener('click', ev => {
-        let checked = containsClassGreen(autoFocusCheckbox)
-        checked = !checked
-        setColor(autoFocusCheckbox, checked ? 'green' : 'red')
-
-        chrome.storage.sync.set({
-            'autoFocus': checked
+    autoFocusCheckbox.addEventListener('click', async(ev) => {
+        let allSiteOn = containsClassGreen(ev.target) ? true : false
+        allSiteOn = !allSiteOn
+        await asyncSetChromeSyncStorage({
+            'autoFocus': allSiteOn
         })
+
+        const shouldRunService = await shouldAutoFocusOnSite()
+        setColor(autoFocusCheckbox, allSiteOn ? 'green' : 'red')
+        setColor(currentSiteAutoFocusCheckBox, shouldRunService ? 'green' : 'red')
     })
 
     /*
         Handle Auto focus for current site
     */
+    setColor(currentSiteAutoFocusCheckBox, currentSiteAutoFocusOn ? 'green' : 'red')
 
+    currentSiteAutoFocusCheckBox.addEventListener('click', async ev => {
+        let allSiteOn = await asyncReadFromStorage('autoFocus')
+        let currentSiteOn = containsClassGreen(ev.target) ? true : false
+        let serviceBlacklist = JSON.parse(await asyncReadFromStorage('autoFocusBlacklist') ?? JSON.stringify([]))
+        let serviceWhitelist = JSON.parse(await asyncReadFromStorage('autoFocusWhitelist') ?? JSON.stringify([]))
+
+        currentSiteOn = !currentSiteOn
+        setColor(ev.target, currentSiteOn ? 'green' : 'red')
+
+        if (allSiteOn) {
+            const index = serviceBlacklist.indexOf(currentDomain)
+            if (index > -1) {
+                serviceBlacklist.splice(index, 1)
+            } else {
+                serviceBlacklist.push(currentDomain)
+            }
+            await asyncSetChromeSyncStorage({
+                autoFocusBlacklist: JSON.stringify(serviceBlacklist)
+            })
+        } else {
+            // in blacklist, remove it
+            const index = serviceWhitelist.indexOf(currentDomain)
+            if (index > -1) {
+                serviceWhitelist.splice(index, 1)
+            } else {
+                serviceWhitelist.push(currentDomain)
+            }
+            await asyncSetChromeSyncStorage({
+                autoFocusWhitelist: JSON.stringify(serviceWhitelist)
+            })
+        }
+    })
 })()

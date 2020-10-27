@@ -70,8 +70,8 @@ export const shouldAutoFocusOnSite = async() => {
     const domain = await asyncGetCurrentDomain()
     return shouldDoOnSite({
         serviceName: 'autoFocus',
-        blacklistName: 'autofocusBlacklist',
-        whitelistName: 'autofocusWhitelist',
+        blacklistName: 'autoFocusBlacklist',
+        whitelistName: 'autoFocusWhitelist',
         domain: domain
     })
 }
