@@ -1,7 +1,10 @@
 body {
-    width: 120px;
+    width: 220px;
     text-align: center;
     border: solid cornflowerblue 4px;
+}
+
+.topContainer{
     padding: 1em
 }
 
@@ -9,6 +12,31 @@ body {
     margin-bottom: 0.5em
 }
 
+.option:hover{
+    cursor: pointer
+}
+
 .title{
     color: cornflowerblue
+}
+
+.green{
+    background-color: lightgreen;
+}
+
+.red{
+    background-color: lightcoral;
+}
+
+.hidden{
+    display: none
+}
+
+#note{
+    max-width: 60%;
+    margin-left: auto;
+}
+
+#noteURL{
+    color: #ff7373
 }

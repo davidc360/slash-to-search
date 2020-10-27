@@ -6,9 +6,9 @@ chrome.runtime.onInstalled.addListener(function(details){
     // pass in null to get all keys
     chrome.storage.sync.get(null, function (items) {
         chrome.storage.sync.set({
-            'on': items['on'] ?? true,
+            'allSiteOn': items['allSiteOn'] ?? true,
             'autoFocus': items['autoFocus'] ?? false,
-            'blackList': items['blackList'] ?? JSON.stringify(SITES_ALREADY_WITH_FEATURE)
+            'serviceBlacklist': items['serviceBlacklist'] ?? JSON.stringify(SITES_ALREADY_WITH_FEATURE)
         })
     })
 })

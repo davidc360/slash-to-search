@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <h3 class='title'>/ to search</h3>
-    <div class='option'>
-        <input type="checkbox" id="onCheckbox" name="onCheckbox">
-        <label for="onCheckbox" id="onLabel">test</label><br>
-    </div>
-    
-    <div class='option'>
-        <input type="checkbox" id="autoFocusCheckbox" name="autoFocusCheckbox">
-        <label for="autoFocusCheckbox" id="autoFocusLabel">Automatically focus on search on page load</label><br>
-    </div>
-    
-    <div class='option'>
-        <input type="checkbox" id="websiteCheckbox" name="websiteCheckbox">
-        <label for="websiteCheckbox" id="websiteLabel"></label><br>
-    </div>
+    <div class="topContainer">
+        <h3 class='title'>/ to search</h3>
 
+        <table>
+            <tr>
+                <td>Service On:</td>
+                <td id="onCheckbox" class="option">For all sites</td>
+                <td id="currentSiteOnCheckbox" class="option">For current site</td>
+            </tr>
+            <tr>
+                <td>Automatically focus:</td>
+                <td id="autoFocusCheckbox" class="option">For all sites</td>
+                <td id="currentSiteAutoFocusCheckbox" class="option">For current site</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div id="note" class="hidden">
+        (note: feature is already built in on <span id="noteURL"></span>)
+        <br/>
+    </div>
+    
     <link rel="stylesheet" href="popup.css">
     <script type="module" src="popup.js"></script>
 </body>

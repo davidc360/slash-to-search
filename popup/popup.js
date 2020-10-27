@@ -4,107 +4,147 @@
     */
     const helpersSrc = chrome.extension.getURL('/helpers.js')
     const { 
+        asyncSetChromeSyncStorage,
         asyncReadFromStorage,
         asyncGetCurrentTab,
-        asyncGetBlackList,
-        SITES_ALREADY_WITH_FEATURE
+        SITES_ALREADY_WITH_FEATURE,
+        shouldRunServiceOnSite,
+        shouldAutoFocusOnSite
      } = await import(helpersSrc)
-     const getServiceOn = () => asyncReadFromStorage('on')
 
+    const setColor = (el, color) => {
+        if (color === 'green') {
+            el.classList.remove('red')
+            el.classList.add('green')
+        } else if (color === 'red'){
+            el.classList.remove('green')
+            el.classList.add('red') 
+        } else {
+            throw new Error('Invalid color in setColor')
+        }
+    }
     
+    const containsClassGreen = el => el.classList.contains('green')
     /*
         Grab elements
     */
     // on/off button
     const onCheckbox = document.querySelector('#onCheckbox')
-    const onLabel = document.querySelector('#onLabel')
+    const currentSiteOnCheckbox = document.querySelector('#currentSiteOnCheckbox')
     
     // auto focus button
     const autoFocusCheckbox = document.querySelector('#autoFocusCheckbox')
-    
-    // black list button
-    const websiteCheckbox = document.querySelector('#websiteCheckbox')
-    const websiteLabel = document.querySelector('#websiteLabel')
-    
+    const currentSiteAutoFocusCheckBox = document.querySelector('#currentSiteAutoFocusCheckbox')
+
+    // note element
+    const noteEl = document.querySelector('#note')
+    const noteURLEl = noteEl.children[0]
     
     /* 
     initialize states
     */
     const currentTab = await asyncGetCurrentTab()
     const tabID = currentTab.id
-    const currentURL = new URL(currentTab.url)
-    const currentDomain = currentURL.hostname
-    let blackList = await asyncGetBlackList()
-    const currentSiteBlocked = blackList.includes(currentDomain)
-    const updateOnLabelText = on => onLabel.textContent = on ? 'On for all sites' : 'Off for all sites'
+    const currentDomain = new URL(currentTab.url).hostname
 
+    // For controlling the service status
+    const allSiteOn = await asyncReadFromStorage('allSiteOn')
+    const currentSiteOn = await shouldRunServiceOnSite()
 
+    // For controlling auto focus
+    const autoFocusOn = await asyncReadFromStorage('autoFocus')
+    const currentSiteAutoFocusOn = await shouldAutoFocusOnSite()
     /* 
         Handle on/off button
     */
-    let serviceOn = await getServiceOn()
-    onCheckbox.checked = serviceOn
-    updateOnLabelText(serviceOn)
+    setColor(onCheckbox, allSiteOn ? 'green' : 'red')
+    setColor(currentSiteOnCheckbox, currentSiteOn ? 'green' : 'red')
     
-    onCheckbox.addEventListener('change', ev => {
-        const checked = ev.target.checked
-        serviceOn = checked
-    
-        chrome.storage.sync.set({
-            'on': checked
-        })
-        updateOnLabelText(checked)
-    
-        chrome.tabs.sendMessage(tabID, {
-            type: (checked && !currentSiteBlocked)
-                ? 'startService' : 'stopService'
+    onCheckbox.addEventListener('click', async(ev) => {
+        let allSiteOn = containsClassGreen(ev.target) ? true : false
+        allSiteOn = !allSiteOn
+        await asyncSetChromeSyncStorage({
+            'allSiteOn': allSiteOn
         })
 
+        const shouldRunService = await shouldRunServiceOnSite()
+        setColor(onCheckbox, allSiteOn ? 'green' : 'red')
+        setColor(currentSiteOnCheckbox, shouldRunService ? 'green' : 'red')
+
+        chrome.tabs.sendMessage(tabID, {
+            type: shouldRunService ?
+                'startService' : 'stopService'
+        })
     })
 
+    /* 
+        Handle current site on
+    */
+   
+    setColor(currentSiteOnCheckbox, currentSiteOn ? 'green' : 'red')
+
+    // if site already has feature built in, let users know
+    if (SITES_ALREADY_WITH_FEATURE.includes(currentDomain)) {
+        noteEl.classList.remove('hidden')
+        noteURLEl.innerText = currentDomain 
+    }
+
+    currentSiteOnCheckbox.addEventListener('click', async ev => {
+        let allSiteOn = await asyncReadFromStorage('allSiteOn')
+        let currentSiteOn = containsClassGreen(ev.target) ? true : false
+        let serviceBlacklist = JSON.parse(await asyncReadFromStorage('serviceBlacklist') ?? JSON.stringify([]))
+        let serviceWhitelist = JSON.parse(await asyncReadFromStorage('serviceWhitelist') ?? JSON.stringify([]))
+
+        currentSiteOn = !currentSiteOn
+        setColor(ev.target, currentSiteOn ? 'green' : 'red')
+
+        if (allSiteOn) {
+            const index = serviceBlacklist.indexOf(currentDomain)
+            if (index > -1) {
+                serviceBlacklist.splice(index, 1)
+            } else {
+                serviceBlacklist.push(currentDomain)
+            }
+            await asyncSetChromeSyncStorage({
+                'serviceBlacklist': JSON.stringify(serviceBlacklist)
+            })
+        } else {
+            // in blacklist, remove it
+            const index = serviceWhitelist.indexOf(currentDomain)
+            if (index > -1) {
+                serviceWhitelist.splice(index, 1)
+            } else {
+                serviceWhitelist.push(currentDomain)
+            }
+            await asyncSetChromeSyncStorage({
+                'serviceWhitelist': JSON.stringify(serviceWhitelist)
+            })
+        }
+    
+        chrome.tabs.sendMessage(tabID, {
+            type: await shouldRunServiceOnSite() ?
+                'startService' : 'stopService'
+        })
+    })
 
     /*
         Handle Auto focus    
     */
-    const autoFocusOn = await asyncReadFromStorage('autoFocus')
-    autoFocusCheckbox.checked = autoFocusOn
+    setColor(autoFocusCheckbox, autoFocusOn ? 'green' : 'red')
+    setColor(currentSiteAutoFocusCheckBox, autoFocusOn ? 'green' : 'red')
 
-    autoFocusCheckbox.addEventListener('change', ev => {
-        const checked = ev.target.checked
+    autoFocusCheckbox.addEventListener('click', ev => {
+        let checked = containsClassGreen(autoFocusCheckbox)
+        checked = !checked
+        setColor(autoFocusCheckbox, checked ? 'green' : 'red')
 
         chrome.storage.sync.set({
             'autoFocus': checked
         })
     })
 
-
-    /* 
-        Handle black list
+    /*
+        Handle Auto focus for current site
     */
-    websiteCheckbox.checked = currentSiteBlocked
-    websiteLabel.textContent = 'Black list ' + currentDomain
-    // if website already has feature, will be black listed
-    // by default and let users know
-    if (SITES_ALREADY_WITH_FEATURE.includes(currentDomain))
-        websiteLabel.textContent += `\n(note: feature already built in on ${currentDomain})`
 
-    websiteCheckbox.addEventListener('change', async ev => {
-        const checked = ev.target.checked
-        if (checked) {
-            blackList = [...blackList, currentDomain]
-            // stop service if blacklisted
-            chrome.tabs.sendMessage(currentTab.id, {type: 'stopService'})
-        } else {
-            // if in blacklist, remove it
-            const index = blackList.indexOf(currentDomain)
-            if (index > -1) blackList.splice(index, 1)
-
-            // start service if checked (if service is on)
-            if(serviceOn)
-                chrome.tabs.sendMessage(currentTab.id, {type: 'startService'})
-        }
-        chrome.storage.sync.set({
-            'blackList': JSON.stringify(blackList)
-        })
-    })
 })()
