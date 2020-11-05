@@ -16,12 +16,12 @@ chrome.runtime.onMessage.addListener(
                 (async () => {
                     // determine if service should run
                     // if not then abort
-                    const serviceOn = await shouldRunServiceOnSite(senderURL)
-                    if (!serviceOn) return
+                    const shouldRun = await shouldRunServiceOnSite(senderURL)
+                    if (!shouldRun) return
                     
-                    // inject script if not blacklist or off
-                    chrome.tabs.executeScript(senderId, {
-                        file: 'content-scripts/focus.js'
+                    // start service if not blacklisted or off
+                    chrome.tabs.sendMessage(senderId, {
+                        type: 'startService'
                     })
         
                     // determine if should autoFocus

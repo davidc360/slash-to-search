@@ -9,7 +9,8 @@
         asyncGetCurrentTab,
         SITES_ALREADY_WITH_FEATURE,
         shouldRunServiceOnSite,
-        shouldAutoFocusOnSite
+        shouldAutoFocusOnSite,
+        shouldClearSearchOnSite
      } = await import(helpersSrc)
 
     const setColor = (el, color) => {
@@ -28,37 +29,35 @@
     /*
         Grab elements
     */
+    const select = selector => document.querySelector(selector)
     // on/off button
-    const onCheckbox = document.querySelector('#onCheckbox')
-    const currentSiteOnCheckbox = document.querySelector('#currentSiteOnCheckbox')
+    const onCheckbox = select('#onCheckbox')
+    const currentSiteOnCheckbox = select('#currentSiteOnCheckbox')
     
     // auto focus button
-    const autoFocusCheckbox = document.querySelector('#autoFocusCheckbox')
-    const currentSiteAutoFocusCheckBox = document.querySelector('#currentSiteAutoFocusCheckbox')
+    const autoFocusCheckbox = select('#autoFocusCheckbox')
+    const currentSiteAutoFocusCheckBox = select('#currentSiteAutoFocusCheckbox')
+
+    // clear search button
+    const clearCheckbox = select('#clearCheckbox')
+    const currentSiteClearCheckBox = select('#currentSiteClearCheckbox')
 
     // note element
-    const noteEl = document.querySelector('#note')
+    const noteEl = select('#note')
     const noteURLEl = noteEl.children[0]
     
     /* 
-    initialize states
+        initialize states
     */
     const currentTab = await asyncGetCurrentTab()
     const tabID = currentTab.id
     const currentDomain = new URL(currentTab.url).hostname
 
-    // For controlling the service status
-    const allSiteOn = await asyncReadFromStorage('allSiteOn')
-    const currentSiteOn = await shouldRunServiceOnSite()
-
-    // For controlling auto focus
-    const autoFocusOn = await asyncReadFromStorage('autoFocus')
-    const currentSiteAutoFocusOn = await shouldAutoFocusOnSite()
     /* 
         Handle on/off button
     */
+    const allSiteOn = await asyncReadFromStorage('allSiteOn')
     setColor(onCheckbox, allSiteOn ? 'green' : 'red')
-    setColor(currentSiteOnCheckbox, currentSiteOn ? 'green' : 'red')
     
     onCheckbox.addEventListener('click', async(ev) => {
         let allSiteOn = containsClassGreen(ev.target) ? true : false
@@ -80,7 +79,7 @@
     /* 
         Handle current site on
     */
-   
+    const currentSiteOn = await shouldRunServiceOnSite()
     setColor(currentSiteOnCheckbox, currentSiteOn ? 'green' : 'red')
 
     // if site already has feature built in, let users know
@@ -130,6 +129,7 @@
     /*
         Handle Auto focus    
     */
+    const autoFocusOn = await asyncReadFromStorage('autoFocus')
     setColor(autoFocusCheckbox, autoFocusOn ? 'green' : 'red')
 
     autoFocusCheckbox.addEventListener('click', async(ev) => {
@@ -147,6 +147,7 @@
     /*
         Handle Auto focus for current site
     */
+    const currentSiteAutoFocusOn = await shouldAutoFocusOnSite()
     setColor(currentSiteAutoFocusCheckBox, currentSiteAutoFocusOn ? 'green' : 'red')
 
     currentSiteAutoFocusCheckBox.addEventListener('click', async ev => {
@@ -178,6 +179,63 @@
             }
             await asyncSetChromeSyncStorage({
                 autoFocusWhitelist: JSON.stringify(serviceWhitelist)
+            })
+        }
+    })
+
+    /*
+        Handle clear search on focus
+    */
+    const clearSearch = await asyncReadFromStorage('clearSearch')
+    setColor(clearCheckbox, clearSearch ? 'green' : 'red')
+    
+    clearCheckbox.addEventListener('click', async(ev) => {
+        let allSiteOn = containsClassGreen(ev.target) ? true : false
+        allSiteOn = !allSiteOn
+        await asyncSetChromeSyncStorage({
+            'clearSearch': allSiteOn
+        })
+        
+        const shouldRunService = await shouldClearSearchOnSite()
+        setColor(clearCheckbox, allSiteOn ? 'green' : 'red')
+        setColor(currentSiteClearCheckBox, shouldRunService ? 'green' : 'red')
+    })
+    
+    /*
+    Handle clear search on current site
+    */
+    const currentSiteClearSearchOn = await shouldClearSearchOnSite()
+    setColor(currentSiteClearCheckBox, currentSiteClearSearchOn ? 'green' : 'red')
+
+    currentSiteClearCheckBox.addEventListener('click', async ev => {
+        let allSiteOn = await asyncReadFromStorage('clearSearch')
+        let currentSiteOn = containsClassGreen(ev.target) ? true : false
+        let serviceBlacklist = JSON.parse(await asyncReadFromStorage('clearSearchBlacklist') ?? JSON.stringify([]))
+        let serviceWhitelist = JSON.parse(await asyncReadFromStorage('clearSearchWhitelist') ?? JSON.stringify([]))
+
+        currentSiteOn = !currentSiteOn
+        setColor(ev.target, currentSiteOn ? 'green' : 'red')
+
+        if (allSiteOn) {
+            const index = serviceBlacklist.indexOf(currentDomain)
+            if (index > -1) {
+                serviceBlacklist.splice(index, 1)
+            } else {
+                serviceBlacklist.push(currentDomain)
+            }
+            await asyncSetChromeSyncStorage({
+                clearSearchBlacklist: JSON.stringify(serviceBlacklist)
+            })
+        } else {
+            // in blacklist, remove it
+            const index = serviceWhitelist.indexOf(currentDomain)
+            if (index > -1) {
+                serviceWhitelist.splice(index, 1)
+            } else {
+                serviceWhitelist.push(currentDomain)
+            }
+            await asyncSetChromeSyncStorage({
+                clearSearchWhitelist: JSON.stringify(serviceWhitelist)
             })
         }
     })

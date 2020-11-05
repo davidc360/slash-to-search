@@ -75,3 +75,13 @@ export const shouldAutoFocusOnSite = async() => {
         domain: domain
     })
 }
+
+export const shouldClearSearchOnSite = async(domain) => {
+    domain = domain ?? await asyncGetCurrentDomain()
+    return shouldDoOnSite({
+        serviceName: 'clearSearch',
+        blacklistName: 'clearSearchBlacklist',
+        whitelistName: 'clearSearchWhitelist',
+        domain: domain
+    })
+}
