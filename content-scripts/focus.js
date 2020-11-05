@@ -61,7 +61,15 @@ const isEditable = el => {
 
 // Determine if input element is for text
 const isText = el => {
-    return el.type === 'text' || el.type === 'search'
+    const types = [
+        'text',
+        'search',
+        'email',
+        'number',
+        'phone',
+        'url',
+    ]
+    return types.includes(el.type)
 }
 
 // Determine if an element is used for typing
