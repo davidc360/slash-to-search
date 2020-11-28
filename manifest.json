@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Slash to search",
-    "version": "0.0.2.4",
+    "version": "0.0.2.5",
     "permissions": [
         "<all_urls>",
         "storage",
@@ -13,7 +13,8 @@
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["content-scripts/contentScript.js"]
+            "js": ["content-scripts/contentScript.js"],
+            "run_at": "document_start"
         }
     ],
     "browser_action": {
