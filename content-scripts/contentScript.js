@@ -82,17 +82,8 @@
         return types.includes(el.type)
     }
 
-    // Determine if an element is used for typing
-    const isTypingArea = el => (
-        el.type === 'text'
-        || el.type === 'textarea'
-        || el.contentEditable === true
-        || el.contentEditable === 'true'
-        || el.contentEditable === 'True'
-    )
-
     // Focus on an element and print it out in console
-    const focus = async(el, reason) => {
+    const focusEl = async(el, reason) => {
         el.focus()
         console.log('focused on: ', el)
         
@@ -109,14 +100,14 @@
 
         for (const el of inputEls) {
             if (isLabeledSearch(el) && isEditable(el)) {
-                focus(el, 'element labeled search')
+                focusEl(el, 'element labeled search')
                 return
             }
         }
 
         for (const el of inputEls) {
             if (isText(el) && isEditable(el)) {
-                focus(el, 'first input on page')
+                focusEl(el, 'first input on page')
                 return
             }
         }
@@ -124,6 +115,15 @@
         // If not focused on any elements
         console.log('no search bar found')
     }
+
+    // Determine if an element is used for typing
+    const isTypingArea = el => (
+        el.tagName.toUpperCase() == 'INPUT'
+        || el.tagName.toUpperCase() == 'TEXTAREA'
+        || el.contentEditable === true
+        || el.contentEditable === 'true'
+        || el.contentEditable === 'True'
+    )
 
     function handleKeyPress(ev) {
         // Stop if key was pressed when focused on a typing area
